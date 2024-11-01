@@ -1,0 +1,91 @@
+﻿
+@{
+    ViewBag.Title = "Weather Forecast";
+}
+
+@model TestTaskForecast.Models.WeatherForecast
+
+@helper RenderAlert(string message, string alertType = "danger")
+{
+    if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-@alertType">
+            @message
+        </div>
+    }
+}
+
+<main>
+
+    <div class="bg-light p-5 rounded shadow-lg">
+        <h1 class="text-center mb-4">🌤 Weather Forecast</h1>
+
+        <p class="fs-5 text-center text-secondary" id="lastCityDisplay">
+            Last searched city: Kyiv
+        </p>
+
+        <div class="container mt-4 mx-auto" style="max-width: 500px;">
+            <div class="card-body">
+                <form method="get" action="/Home/GetWeather" class="container mt-4 mb-4 p-0 text-center" id="cityForm">
+                    <div class="form-group">
+                        <label for="cityName">Enter the name of the city:</label>
+                        <input type="text" id="cityName" name="cityName" class="form-control m-auto" placeholder="City name" required />
+                    </div>
+
+                    <button class="btn btn-primary mt-2" type="submit">Get forecast</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @RenderAlert(ViewBag.FetchingError)
+    @RenderAlert(ViewBag.ErrorMessage)
+
+
+    @if (Model?.DailyForecasts != null)
+    {
+        <div class="d-flex justify-content-center align-items-center p-4 rounded" style="background-color: #daebfc99;">
+            <div class="text-center">
+                <h2 class="mb-3">@Model.Headline.Name</h2>
+                <h3>
+                    Weather forecast on @DateTime.Parse(Model.DailyForecasts[0].Date).ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("en-US"))
+                </h3>
+                @RenderAlert(ViewBag.AlertMessage, "warning")
+
+                <div class="card p-4 mb-3">
+                    <h5 class="card-title text-center mb-4">Temperature Forecast</h5>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <p class="fs-5 text-muted mb-1">Min Temperature</p>
+                            <p class="display-6 text-primary">
+                                @Math.Ceiling((Model.DailyForecasts[0].Temperature.Minimum.Value - 32) * 5 / 9)°<span class="fs-5">C</span>
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <p class="fs-5 text-muted mb-1">Max Temperature</p>
+                            <p class="display-6 text-danger">
+                                @Math.Ceiling((Model.DailyForecasts[0].Temperature.Maximum.Value - 32) * 5 / 9)°<span class="fs-5">C</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const savedCity = localStorage.getItem("lastCity");
+        const lastCityDisplay = document.getElementById("lastCityDisplay");
+        if (savedCity) {
+            lastCityDisplay.textContent = `Last searched city: ${savedCity}`;
+        }
+    });
+
+    document.getElementById("cityForm").addEventListener("submit", function () {
+        const cityName = document.getElementById("cityName").value;
+        localStorage.setItem("lastCity", cityName);
+    });
+</script>
